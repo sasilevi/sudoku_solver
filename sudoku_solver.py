@@ -8,10 +8,9 @@ log = Logger(__name__)
 
 colum_value = lambda x: x if x else "__"
 cube_size = 0
-# current_time_u = lambda: datetime.datetime.now()
 
 
-def create_suduku():
+def create_sudoku():
     return [
         [
             12, None, None, 11, 1, None, None, 7, None, None, 5, 13, None,
@@ -73,7 +72,7 @@ def create_suduku():
         ],
     ]
 
-def create_suduku2():
+def create_sudoku2():
     return [
         [None, None, None, None, 5, None, None, None, 1],
         [4, 5, None, None, None, None, 2, 9, None],
@@ -86,14 +85,14 @@ def create_suduku2():
         [2, None, None, None, 6, None, None, None, None]
     ]
 
-def print_suduku(suduku, message=""):
+def print_sudoku(sudoku, message=""):
     print(message)
-    rows = len(suduku)
-    for row in suduku:
+    rows = len(sudoku)
+    for row in sudoku:
         assert rows == len(row)
     log.info(f"sududku is {rows}*{rows}")
     cube_size = int(math.sqrt(rows))
-    for ri, row in enumerate(suduku):
+    for ri, row in enumerate(sudoku):
         if ri % cube_size == 0:
             print('|' + '-' * (rows * 4 + cube_size-1), end='|\n')
         for ci, col in enumerate(row):
@@ -106,11 +105,11 @@ def print_suduku(suduku, message=""):
     print('|' + '-' * (rows * 4 + cube_size-1), end='|\n'.rjust(2))
 
 
-def get_cube(suduku, row, col):
+def get_cube(sudoku, row, col):
     cube_row = int(int((row / cube_size)) * cube_size)
     cube_col = int(int((col / cube_size)) * cube_size)
     cube = []
-    rows = suduku[cube_row:cube_row + cube_size]
+    rows = sudoku[cube_row:cube_row + cube_size]
     for r in rows:
         cube.append(r[cube_col:cube_col + cube_size])
     return cube
@@ -124,9 +123,9 @@ def validate_row(row):
             v.append(x)
 
 
-def validate_col(suduku, col):
+def validate_col(sudoku, col):
     v = []
-    for row in suduku:
+    for row in sudoku:
         if row[col] is not None:
             assert row[
                 col] not in v, f"Value {row[col]} exist multiple times in col {col}"
@@ -143,57 +142,57 @@ def validate_cube(cube):
     # print("OK")
 
 
-def validate_suduku(suduku):
+def validate_sudoku(sudoku):
     try:
-        for ri, row in enumerate(suduku):
+        for ri, row in enumerate(sudoku):
             validate_row(row)
             for ci, _ in enumerate(row):
-                validate_col(suduku, ci)
-                validate_cube(get_cube(suduku, ri, ci))
+                validate_col(sudoku, ci)
+                validate_cube(get_cube(sudoku, ri, ci))
     except:
         return False
     return True
 
 
-def validate_suduku_change(suduku, ri, ci):
+def validate_sudoku_change(sudoku, ri, ci):
     try:
-        validate_row(suduku[ri])
-        validate_col(suduku, ci)
-        validate_cube(get_cube(suduku, ri, ci))
+        validate_row(sudoku[ri])
+        validate_col(sudoku, ci)
+        validate_cube(get_cube(sudoku, ri, ci))
     except Exception as e:
         # print(e)
         return False
     return True
 
 
-def found_solution(suduku):
-    for r in suduku:
+def found_solution(sudoku):
+    for r in sudoku:
         for c in r:
             if c is None:
                 return False
     return True
 
 
-def solve_suduku(suduku):
-    # print_suduku(suduku)
-    solved_suduku = suduku
-    possibilities = len(suduku)+1
-    for ri, row in enumerate(suduku):
+def solve_sudoku(sudoku):
+    # print_sudoku(sudoku)
+    solved_sudoku = sudoku
+    possibilities = len(sudoku)+1
+    for ri, row in enumerate(sudoku):
         for ci, col in enumerate(row):
             if col is None:
                 for v in range(1, possibilities):
-                    suduku[ri][ci] = v
-                    if not validate_suduku_change(suduku, ri, ci):
+                    sudoku[ri][ci] = v
+                    if not validate_sudoku_change(sudoku, ri, ci):
                         continue
-                    solved_suduku = solve_suduku(copy.deepcopy(suduku))
-                    if solved_suduku is None:
+                    solved_sudoku = solve_sudoku(copy.deepcopy(sudoku))
+                    if solved_sudoku is None:
                         continue
                     else:
-                        return solved_suduku
+                        return solved_sudoku
                 return None
 
-    # print_suduku(suduku)
-    return solved_suduku
+    # print_sudoku(sudoku)
+    return solved_sudoku
 
 def get_row_missing_numbers(row):
     result = []
@@ -203,22 +202,22 @@ def get_row_missing_numbers(row):
             result.append(v) 
     return result
 
-def get_col_missing_numbers(suduku, ci):
+def get_col_missing_numbers(sudoku, ci):
     result = []
-    possibilities = len(suduku)+1
+    possibilities = len(sudoku)+1
     for v in range(1, possibilities):
         found = False
-        for row in suduku:
+        for row in sudoku:
             if v == row[ci]:
                 found = True
         if not found:
             result.append(v) 
     return result
 
-def get_cube_missing_numbers(suduku, ri,ci):
+def get_cube_missing_numbers(sudoku, ri,ci):
     result = []
-    possibilities = len(suduku)+1
-    cube = get_cube(suduku, ri, ci)
+    possibilities = len(sudoku)+1
+    cube = get_cube(sudoku, ri, ci)
     for v in range(1, possibilities):
         found = False
         for r in cube:
@@ -229,77 +228,77 @@ def get_cube_missing_numbers(suduku, ri,ci):
             result.append(v)
 
 
-def optimize_suduku_rows(suduku):
+def optimize_sudoku_rows(sudoku):
     did_optimize = False
-    for ri, row in enumerate(suduku):
+    for ri, row in enumerate(sudoku):
         missing_numbers = get_row_missing_numbers(row)
         for n in missing_numbers:
             valid_count = 0
             valid_pos = 0
             for ci, col in enumerate(row):
                 if col is None:
-                    suduku[ri][ci] = n
-                    if validate_suduku_change(suduku,ri,ci):
+                    sudoku[ri][ci] = n
+                    if validate_sudoku_change(sudoku,ri,ci):
                         valid_count += 1
                         valid_pos = ci
-                    suduku[ri][ci] = None
+                    sudoku[ri][ci] = None
             if valid_count == 1:
-                suduku[ri][valid_pos]=n
+                sudoku[ri][valid_pos]=n
                 log.info(f"optimize set {n} at row{ri}, col{ci}")
                 did_optimize = True
-                # print_suduku(suduku)
+                # print_sudoku(sudoku)
     return did_optimize
 
-def optimize_suduku_cols(suduku):
+def optimize_sudoku_cols(sudoku):
     did_optimize = False
-    for ci in range(len(suduku)):
-        missing_numbers = get_col_missing_numbers(suduku,ci)
+    for ci in range(len(sudoku)):
+        missing_numbers = get_col_missing_numbers(sudoku,ci)
         for n in missing_numbers:
             valid_count = 0
             valid_pos_ri = 0
             valid_pos_ci = 0
-            for ri, row in enumerate(suduku):
+            for ri, row in enumerate(sudoku):
                 if row[ci] is None:
-                    suduku[ri][ci] = n
-                    if validate_suduku_change(suduku,ri,ci):
+                    sudoku[ri][ci] = n
+                    if validate_sudoku_change(sudoku,ri,ci):
                         valid_count += 1
                         valid_pos_ri = ri
                         valid_pos_ci = ci
-                    suduku[ri][ci] = None
+                    sudoku[ri][ci] = None
                     if valid_count > 1:
                         break
             if valid_count == 1:
-                suduku[valid_pos_ri][valid_pos_ci]=n
+                sudoku[valid_pos_ri][valid_pos_ci]=n
                 log.info(f"optimize set {n} at row{valid_pos_ri}, col{valid_pos_ci}")
                 did_optimize = True
-                # print_suduku(suduku)
+                # print_sudoku(sudoku)
     return did_optimize
 
-def optimize_suduku(suduku):
-    return optimize_suduku_rows(suduku) or optimize_suduku_cols(suduku)
+def optimize_sudoku(sudoku):
+    return optimize_sudoku_rows(sudoku) or optimize_sudoku_cols(sudoku)
 
-def how_much_empty(suduku):
+def how_much_empty(sudoku):
     count = 0
-    for r in suduku:
+    for r in sudoku:
         for c in r:
             if c is None:
                 count += 1
     return count
 
 def main():
-    suduku = create_suduku()
+    sudoku = create_sudoku()
     global cube_size 
-    cube_size = int(math.sqrt(len(suduku)))
+    cube_size = int(math.sqrt(len(sudoku)))
 
-    print_suduku(suduku, "start")
-    print(f"empty before optimization:{how_much_empty(suduku)}")
-    while optimize_suduku(suduku):
+    print_sudoku(sudoku, "start")
+    print(f"empty before optimization:{how_much_empty(sudoku)}")
+    while optimize_sudoku(sudoku):
         log.info("Optimization was done")
-    print(f"empty After optimization:{how_much_empty(suduku)}")
+    print(f"empty After optimization:{how_much_empty(sudoku)}")
 
-    solution = solve_suduku(suduku)
+    solution = solve_sudoku(sudoku)
     if solution != None:
-        print_suduku(solution, "solution")
+        print_sudoku(solution, "solution")
     else:
         log.info("Failed to solve!")
 
