@@ -242,6 +242,8 @@ def optimize_sudoku_rows(sudoku):
                         valid_count += 1
                         valid_pos = ci
                     sudoku[ri][ci] = None
+                    if valid_count > 1:
+                        break
             if valid_count == 1:
                 sudoku[ri][valid_pos]=n
                 log.info(f"optimize set {n} at row{ri}, col{ci}")
